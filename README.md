@@ -14,7 +14,8 @@ The FinSim Game was developed by Development Economics students at the Universit
 
 Project Repository:
 The complete project, including the source code (developed using the Flutter Framework) of the game, can be found on GitHub: https://github.com/Luc1eSky/financial_literacy_game
-The game can also be checked out here: https://financelitsim.web.app/#/
+
+The game (web application) itself can be checked out here: https://financelitsim.web.app/#/
 
 
 Note:
