@@ -1,0 +1,334 @@
+---
+title: "FinSim Game Data Analysis Example"
+output:
+  html_document:
+    df_print: paged
+---
+# Notebook with data exploration and visualizatino of FinSim Game Data
+
+An explanation of the data source can be found in the read_me_game_data.Rmd file
+
+This R notebook investigates a cleaned dataset derived from the FinSim Game. The data was collected during an RCT that was conducted between 06/06/2023 - 07/29/2023 in four districts in central and eastern Uganda.The raw data from the game was stored in a NoSQL Firestore database and comprises a total of 117,950 decision entries made by 133 unique participants who played the FinSim game as part of the study. The dataset captures user activity within the FinSim Game, including details regarding participant progress, decision-making processes, and corresponding outcomes.
+
+Context FinSim Game: The digital simulation game was developed by Development Economics students at the University of San Francisco and was used to conduct randomized controlled trials aimed at teaching financial literacy to microcredit borrowers in low-income countries
+
+An overview of the whole project can be found here: github: https://github.com/Luc1eSky/financial_literacy_game
+
+```{r}
+#Libraries used
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+library(stats)
+library(lubridate) 
+library(readr)
+library(shiny)
+
+```
+```{r}
+# Read in the csv file using the 'readr' package
+# Ensure your csv file is in the same folder as your notebook, otherwise you have to update the file path
+data <- read_csv("UG_cleaned_game_data.csv")
+```
+```{r}
+# overview dataset (first 5 observations)
+head(data)
+```
+This data set entails all the decisions that users made within the FinSim Game during the study conducted in Uganda. 
+
+```{r}
+# Number of observations in dataset (total decisions made by all users across all sessions)
+total_decisions <- nrow(data)
+
+# Unique participants of the study aka users
+unique_users <- length(unique(data$uid))
+
+# Print informative message
+cat("The data set contains:", total_decisions, "observations (decisions).\n")
+cat("There are", unique_users, "unique participants (users) in the study.\n")
+```
+```{r}
+# Assuming 'uid' is the column representing unique user identifiers
+# this creates a data frame for each user for sample exploration
+df <- data %>% 
+  group_by(uid) %>%
+  slice(1)
+```
+
+The code snippet below is used to create a shiny app to be able to explore the sample of 133 unique users that tool part in the study based on characteristics: gender, age group, education level, and branch.
+
+The goal is to allow a data exploration of the study population.
+```{r}
+# UI of shiny app allows to filter and then select characterists of users for plotting
+ui <- fluidPage(
+  titlePanel("User Characteristics Distribution"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("filter_education", "Filter Education:", choices = c("All", unique(df$education))),
+      selectInput("filter_age", "Filter Age Group:", choices = c("All", unique(df$age))),
+      selectInput("filter_gender", "Filter Gender:", choices = c("All", unique(df$gender))),
+      selectInput("filter_branch", "Filter Branch:", choices = c("All", unique(df$branch))),
+      selectInput("characteristic", "Select Characteristic:", choices = c("education", "age", "gender", "branch")),
+      actionButton("update", "Update")
+    ),
+    mainPanel(
+      plotOutput("characteristics_distribution")
+    )
+  )
+)
+
+# Server logic
+server <- function(input, output, session) {
+  
+  # Reactive value to store selected characteristic
+  selected_characteristic <- reactiveVal()
+  
+  # Update selected characteristic when "Update" button is clicked
+  observeEvent(input$update, {
+    selected_characteristic(input$characteristic)
+  })
+  
+  # Plot distribution based on selected characteristic
+  output$characteristics_distribution <- renderPlot({
+    req(selected_characteristic())  # Wait until characteristic is selected
+    
+    characteristic <- selected_characteristic()
+    filter_education <- input$filter_education
+    filter_age_group <- input$filter_age
+    filter_gender <- input$filter_gender
+    filter_branch <- input$filter_branch
+    
+    filtered_data <- df
+    
+    if (filter_education != "All") {
+      filtered_data <- filtered_data %>% filter(education == filter_education)
+    }
+    
+    if (filter_age_group != "All") {
+      filtered_data <- filtered_data %>% filter(age_group == filter_age)
+    }
+    
+    if (filter_gender != "All") {
+      filtered_data <- filtered_data %>% filter(gender == filter_gender)
+    }
+    
+    if (filter_branch != "All") {
+      filtered_data <- filtered_data %>% filter(branch == filter_branch)
+    }
+    
+    if (!is.null(characteristic)) {
+      data <- filtered_data %>% 
+        group_by(!!sym(characteristic)) %>% 
+        summarise(count = n())
+      
+      ggplot(data, aes_string(x = characteristic, y = "count")) +
+        geom_bar(stat = "identity", fill = "lightblue") +
+        labs(title = paste("User Characteristics Distribution by", characteristic),
+             x = characteristic,
+             y = "Count")
+    } else {
+      ggplot() + 
+        geom_blank() +
+        labs(title = "Select a characteristic to display distribution")
+    }
+  })
+}
+
+# Run the application
+shinyApp(ui = ui, server = server)
+```
+
+
+```{r}
+# Create bar chart that indicates the attention rate of participants across the total of 5 game sessions of the RCT
+# Group by 'uid' and count unique session IDs
+session_counts <- data %>%
+  group_by(uid) %>%
+  summarise(unique_sessions = n_distinct(session)) %>%
+  ungroup()
+
+# Count unique values and calculate percentages
+unique_sessions_summary <- session_counts %>%
+  count(unique_sessions) %>%  # Count occurrences of unique values
+  mutate(percentage = n / nrow(session_counts) * 100) %>%  # Calculate percentage
+  rename(count = n)  # Rename the count column for clarity
+
+print(unique_sessions_summary)
+
+ggplot(session_counts, aes(x = unique_sessions)) +
+  geom_bar(stat = "count", color = "lightblue", fill = "lightblue") +  # Use geom_bar with stat="count"
+  labs(x = "Unique Sessions", y = "Frequency", title = "Number of Sessions Attended by Participant") +
+  theme_classic()  # Optional for a cleaner look
+
+```
+
+The bar graph above depicts the attention rate of participants in a study, where the x-axis represents the number of game sessions attended (or number of times the FinSim game was played), and the y-axis represents the amount of participants. The distribution is skewed towards the right, indicating a high attendance rate. Notably, 75.94% of participants attended all 5 sessions. This high attendance is ideal for analyzing how game performance changes over the course of the study and potentially identifying a learning effect on how effectively participants play the game with repetition.
+
+```{r}
+# Assuming UG_raw_data is your data frame with 'level_number', 'session', and 'type_one_error' columns
+
+# Group by 'level_number' and 'session'
+grouped_data <- data %>%
+  group_by(level_number, session)
+
+# Calculate sum and percentage of 'type_one_error'
+result <- grouped_data %>%
+  summarise(
+    type_one_error = sum(type_one_error),  # Sum of type_one_error
+    total_decisions = n()  # Total decisions (count of rows in each group)
+  ) %>%
+  mutate(percentage_type_one_error = round((type_one_error / total_decisions) * 100, 2))  # Calculate percentage
+
+# Print the result
+print(result)
+
+# Create the line plot
+ggplot(result, aes(x = session, y = percentage_type_one_error, color = factor(level_number))) +
+  geom_line() +
+  labs(x = "Session Number", y = "Percentage Type One Errors", title = "Percentage of Type One Errors Over Sessions (per Level)") +
+  theme_classic() + 
+  theme(legend.title = element_blank())
+
+
+```
+
+The line graph depicts a decreasing trend in the percentage of Type 1 errors made by participants across the five consecutive game sessions played across all the levels played (Game has a total of 6 levels with increasing difficulty). This suggests that participants made fewer Type 1 errors (potentially signifying improved decision-making) as they progressed through repeated game play sessions within the same level.
+
+```{r}
+# Assuming df_without_cant_afford is your data frame with 'roi_from_asset' and 'decision' columns
+
+# Create the stacked bar chart
+ggplot(data, aes(x = roi_from_asset, fill = decision)) +
+  geom_histogram(bins = 20, position = "stack", alpha = 0.5, color = "black") +
+  labs(x = "ROI", y = "Amount of Decisions in Game", title = "Distribution of ROI by Buy Decision") +
+  scale_x_continuous(breaks = seq(-10, 10, 2)) +  # Set x-axis ticks
+  theme_classic()  # Optional for a cleaner look
+
+```
+The stacked bar graph visualizes the distribution of decision types within the FinSim game in relation to the in-game investment's Return on Investment (ROI).
+
+Decision Breakdown: The graph reveals that "don't buy" decisions constitute the majority of decisions being made, suggesting a general tendency towards investment aversion among participants.
+
+Investment Behavior: Interestingly, the graph also indicates a correlation between increasing ROI and a rise in both "loan-acquired assets" and "buyCash-acquired assets." This pattern suggests that participants may become more willing to invest (through loans and virtual cash) as the potential return on investment becomes more attractive.
+
+Outliers: There are a few investment decisions made by users despite a high negative ROI for the investment. This could hint towards some issues understanding the concepts of a negative ROI for some study participants.
+
+```{r}
+# Choose one completed level as example
+# Filter data for user 'UGGM124', level 3, and session 4
+filtered_data <- data %>%
+  filter(uid == "UGGM124" & level_number == 3 & session == 4)
+
+color_map <- c(dontBuy = "red", buyCash = "blue", loan = "green")
+
+ggplot(filtered_data, aes(x = period_number, y = cash_at_end, color = decision)) +
+  geom_point(size = 3, shape = 16) + 
+  scale_color_manual(values = color_map) +
+  labs(title = "Cash at End Over Periods for UGGM124, Level 3, Session 4",
+       x = "Period Number",
+       y = "Cash at End") +
+  theme_classic() +
+  theme(legend.title = element_text(face = "bold"))
+
+```
+The figure depicts a user path within level 3 of the FinSim game. The x-axis represents the number of decisions made in the level, and the y-axis represents the accumulated virtual cash balance, with a threshold of $50 required to progress to the next level. 
+
+The color coding indicates the decision type for each step:
+Green: Loan (acquiring assets through loans)
+Red: "Don't buy (passing on acquiring an asset).
+
+Observations:
+This specific user path primarily utilizes loan decisions (green) to accumulate virtual cash.
+It's noteworthy that level 3 only allows loaning for asset acquisition, explaining the absence of other decision colors. The path demonstrates that the user successfully reached the $50 threshold to progress only after playing over 800 periods, indicating a hesitancy towards loaning in order to acquire assets.
+
+```{r}
+# Grouping by 'uid', 'session', and 'level_number', and calculating mean of 'played_periods'
+grouped_data <- data %>%
+  filter(level_status == "won") %>%
+  group_by(uid, session, level_number) %>%
+  summarise(mean_played_periods = mean(played_periods))
+
+# Displaying the grouped data
+print(grouped_data)
+
+# Now we can create the violin plot with color
+ggplot(grouped_data, aes(x = session, y = mean_played_periods, fill = factor(session))) +
+  geom_violin() +
+  scale_fill_brewer(palette = "Set3") +  # You can choose any color palette you like
+  labs(title = "Distribution of played_periods per session",
+       x = "Session", y = "Played Periods")
+```
+The violin plot visualizes the distribution of "played periods" (number of rounds) required to complete levels across different sessions (gameplays). The data is separated by "won levels" (levels successfully completed).
+
+Observations:
+
+-The violin plot suggests a potential association between session number and the distribution of played periods. Notably, the later sessions (potentially representing higher difficulty levels) exhibit a wider spread and potentially a shift towards requiring more played periods to win a level.
+
+This pattern could be attributed to two possible factors:
+
+Increased Complexity: Later levels might be inherently more complex, requiring a greater number of attempts for successful completion.
+
+Lower Starting Capital: Players might begin each session with a lower virtual cash amount, potentially hindering their progress in the initial stages of later sessions.
+
+```{r}
+
+# Step 1: Convert the date column to Date class with the correct format
+data$level_date <- as.Date(data$level_date, format = "%m/%d/%Y")
+
+# Step 2: Aggregate the data to count the number of rows per date
+aggregated_data <- data %>%
+  group_by(level_date) %>%
+  summarise(count = n())
+
+# Step 3: Create plot to show count of decisions over time
+ggplot(aggregated_data, aes(x = level_date, y = count)) +
+  geom_line(color = "blue") +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +  # Add trend line
+  labs(title = "Count of Decisions Over Time",
+       x = "Date",
+       y = "Count of Decisions") +
+  theme_minimal()
+
+
+```
+
+The experiment started in the beginning of May until the beginning of August. The graph indicates that the amount of decisions made within the game increases in later sessions. This could suggest that people become more familiar with the game and hence making more and faster decisions during the game sessions. Especially the initial sessions took some time away from the actual play time due to instructions and practice rounds with the participants.
+
+```{r}
+
+# Step 2: Aggregate the data to count the number of rows per date and decision type
+aggregated_data <- data %>%
+  group_by(level_date, decision) %>%
+  summarise(count = n())
+
+# Step 3: Create plot to show count of decisions over time for each decision type
+ggplot(aggregated_data, aes(x = level_date, y = count, color = decision)) +
+  geom_line() +
+  geom_smooth(method = "loess", se = FALSE) +  # Add trend line
+  labs(title = "Count of Decisions Over Time",
+       x = "Date",
+       y = "Count of Decisions",
+       color = "Decision Type") +
+  scale_color_manual(values = c("dontBuy" = "blue", "loan" = "green", "buyCash" = "red")) +  # Custom color for each line
+  theme_minimal()
+
+```
+
+The is a similar line graph as above by the total decisions are now split into the decisions made by users. The graph suggest that the overall decisions increase in later sessions of the game but that the majority of that increase is driven by dontBuy decisions within the game. In comparison the total amount of loan and buyCash decisions increase less drastically over time.
+
+```{r}
+# Assuming your dataset is stored in a data frame called 'data'
+
+# Step 1: Plot the distribution of roi_from_asset values for each decision
+ggplot(data, aes(x = decision, y = roi_from_asset, fill = decision)) +
+  geom_boxplot() +
+  labs(title = "Distribution of ROI from Asset by Decision",
+       x = "Decision",
+       y = "ROI from Asset",
+       fill = "Decision") +
+  theme_minimal()
+
+
+```
+A boxplot visualization depicts the distribution of return on investment (ROI) across the available decision options within the game. The median ROI for the "buyCash" and "loan" decisions appears to be marginally higher compared to the "dontBuy" option. Notably, the distribution exhibits a presence of outliers, representing instances where users acquired assets resulting with a significantly negative ROI. This observation warrants further investigation and suggests a potential need to improve clarity regarding the concept of negative ROI among participants within the study.
+

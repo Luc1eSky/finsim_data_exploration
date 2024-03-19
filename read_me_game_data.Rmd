@@ -1,0 +1,101 @@
+---
+title: "read_me_game_data"
+author: "Lucie Schulz"
+date: '2024-03-19'
+output: html_document
+---
+
+Title: FinSim Raw Game Data
+
+Description:
+
+This document explores the cleaned FinSim Game dataset. The data was collected during an RCT in Uganda in the summer of 2023 via a No-SQL Firestore database. The dataset contains a total of 117,950 decisions that were recorded from the game from a total of 133 unique participants, who played the game during the study. It tracks user activity within the FinSim Game, capturing details about each user's progress, decisions, and outcomes.
+
+Source: The raw data is available via GitHub (ENTER URL)
+
+Data Description:
+
+RAW DATA COLLECTED IN REAL TIME DURING GAME PLAY
+uid: Unique identifier of the participant
+user_created_on: Date and time the user account was created.
+session_id: Unique identifier for each game session.
+session_started_on: Date and time the session began.
+session_completed_on: Date and time the session ended (if applicable).
+session_status: Status of the session (e.g., completed, abandoned).
+level_id: Unique identifier for the game level played.
+level_started_on: Date and time the level began within the session.
+level_completed_on: Date and time the level was completed (if applicable).
+level_status: Status of the level within the session (e.g. won, lost, incomplete).
+level_number: Level number within the game (Level 1 - 6).
+played_periods: Total number of periods played within a level (periods indicating investment rounds).
+period_number: Period number within the level.
+cash_at_start: User's starting cash balance for the period played.
+cash_at_end: User's ending cash balance for the period played.
+decision: User's decision made during a specific period (buyCash, loan, dontBuy).
+income_per_period: Income earned per period from the presented asset.
+life_expectancy: Asset's life expectancy within the game context.
+price: Price of an asset within the game.
+risk_level: Asset's risk level within the period (survival).
+asset_type: Type of asset the user interacted with within the game (cow, chicken, goat).
+
+CALCULATED FIELDS:
+country: which country the study was conducted based on first two letters of uid (here UG = Uganda)
+treatment_group: there were two treatment arms where the game was used (UGGM = game only and UGRT = game and aspiration treatment combined)
+level_duration_minutes: how long a level was played (only available if completed or lost)
+level_date: the date the level was played
+decision_buycash: dummy variable created from decision variable in raw data
+decision_dontbuy: dummy variable created from decision variable in raw data
+decision_loan: dummy variable created from decision variable in raw data
+expected_income_from_asset: Calculated by income_per_period * life expectancy
+actual_price_asset: if the animal was bought via a loan = price * 1.2 (interest rate was set to 20% across the game)
+roi_from_asset: expected income - actual price
+should_buy_cash: TRUE if the ROI > 0
+can_afford_in_cash: if start cash >= actual price of asset
+can_afford_via_loan: if start case >= actual price of asset / 2 (loans repayed over 2 periods within the game)
+should_borrow: TRUE if not enough cash and ROI of asset is positive even when loaning
+type_one_error: User bought an asset with a negative ROI
+type_two_error: User did not buy an asset with a positive ROI
+correct_decision: Type 1 and Type 2 error both FALSE
+session: in which session of the user the level was played (total of five sessions in study)
+
+USER CHARACTERISTICS FROM SURVEY:
+branch: which district the user is from
+group: which micro-finance group the user is part of
+gender: male / female
+age: age group the user belongs to 
+education: highest educational level reached by user
+number_of_dependents: how many dependents the user has
+income: Boolean, if income is generated
+income_source1: what is the source of the income
+digital_lit1: rating of digital literacy
+fin_training: Boolean, if received financial training
+
+Data Exploration:
+
+```{r}
+# libraries used
+library(readxl)
+library(kableExtra)
+
+# Set the working directory - please update when using this script
+setwd("/Users/lucieschulz/Desktop/Thesis/Data Analysis/cleaned_datasets/")
+
+# Read the Excel file using the 'readxl' package
+data <- read_csv("UG_cleaned_game_data.csv")
+
+# Get the length (number of rows) of the DataFrame
+length(data)
+
+# unique participants
+length(unique(data$uid))
+```
+
+Key Findings:
+
+```{r}
+# Summarize data
+summary(data)
+head(data)
+```
+
+
