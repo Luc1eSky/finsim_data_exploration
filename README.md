@@ -13,7 +13,7 @@ Context:
 The FinSim Game was developed by Development Economics students at the University of San Francisco as part of the IDEC (International and Development Economics) program. The R notebook investigates the cleaned dataset to gain insights into user behavior and learning outcomes within the game.
 
 Project Repository:
-The complete project, including the R notebook and potentially other relevant files, can be found on GitHub: https://github.com/Luc1eSky/financial_literacy_game
+The complete project, including the source code (developed using the Flutter Framework) of the game, can be found on GitHub: https://github.com/Luc1eSky/financial_literacy_game
 The game can also be checked out here: https://financelitsim.web.app/#/
 
 
