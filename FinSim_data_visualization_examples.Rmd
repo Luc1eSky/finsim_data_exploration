@@ -7,11 +7,6 @@ output:
 # Notebook with data exploration and visualizatino of FinSim Game Data
 
 An explanation of the data source can be found in the read_me_game_data.Rmd file
-
-This R notebook investigates a cleaned dataset derived from the FinSim Game. The data was collected during an RCT that was conducted between 06/06/2023 - 07/29/2023 in four districts in central and eastern Uganda.The raw data from the game was stored in a NoSQL Firestore database and comprises a total of 117,950 decision entries made by 133 unique participants who played the FinSim game as part of the study. The dataset captures user activity within the FinSim Game, including details regarding participant progress, decision-making processes, and corresponding outcomes.
-
-Context FinSim Game: The digital simulation game was developed by Development Economics students at the University of San Francisco and was used to conduct randomized controlled trials aimed at teaching financial literacy to microcredit borrowers in low-income countries
-
 An overview of the whole project can be found here: github: https://github.com/Luc1eSky/financial_literacy_game
 
 ```{r}

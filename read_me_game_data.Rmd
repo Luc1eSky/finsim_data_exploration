@@ -5,13 +5,9 @@ date: '2024-03-19'
 output: html_document
 ---
 
-Title: FinSim Raw Game Data
+Title: FinSim Game - Data Dictionary
 
-Description:
-
-This document explores the cleaned FinSim Game dataset. The data was collected during an RCT in Uganda in the summer of 2023 via a No-SQL Firestore database. The dataset contains a total of 117,950 decisions that were recorded from the game from a total of 133 unique participants, who played the game during the study. It tracks user activity within the FinSim Game, capturing details about each user's progress, decisions, and outcomes.
-
-Source: The raw data is available via GitHub (ENTER URL)
+Data Collection: The data was collected during an RCT in Uganda in the summer of 2023 via a No-SQL Firestore database. The dataset contains a total of 117,950 decisions that were recorded from the game from a total of 133 unique participants, who played the game during the study. It tracks user activity within the FinSim Game, capturing details about each user's progress, decisions, and outcomes.
 
 Data Description:
 
@@ -69,33 +65,5 @@ income: Boolean, if income is generated
 income_source1: what is the source of the income
 digital_lit1: rating of digital literacy
 fin_training: Boolean, if received financial training
-
-Data Exploration:
-
-```{r}
-# libraries used
-library(readxl)
-library(kableExtra)
-
-# Set the working directory - please update when using this script
-setwd("/Users/lucieschulz/Desktop/Thesis/Data Analysis/cleaned_datasets/")
-
-# Read the Excel file using the 'readxl' package
-data <- read_csv("UG_cleaned_game_data.csv")
-
-# Get the length (number of rows) of the DataFrame
-length(data)
-
-# unique participants
-length(unique(data$uid))
-```
-
-Key Findings:
-
-```{r}
-# Summarize data
-summary(data)
-head(data)
-```
 
 
