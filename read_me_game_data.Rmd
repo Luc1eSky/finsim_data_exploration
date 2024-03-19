@@ -5,7 +5,7 @@ date: '2024-03-19'
 output: html_document
 ---
 
-Title: FinSim Game - Data Dictionary
+Title: FinSim Game - Data Dictionary Overview
 
 Data Collection: The data was collected during an RCT in Uganda in the summer of 2023 via a No-SQL Firestore database. The dataset contains a total of 117,950 decisions that were recorded from the game from a total of 133 unique participants, who played the game during the study. It tracks user activity within the FinSim Game, capturing details about each user's progress, decisions, and outcomes.
 
