@@ -4,13 +4,13 @@ output:
   html_document:
     df_print: paged
 ---
-# Notebook with data exploration and visualizatino of FinSim Game Data
+## Notebook with data exploration and visualizatino of FinSim Game Data
 
 An explanation of the data source can be found in the read_me_game_data.Rmd file
 An overview of the whole project can be found here: github: https://github.com/Luc1eSky/financial_literacy_game
 
 ```{r}
-#Libraries used
+#Libraries used in the notebook
 library(ggplot2)
 library(dplyr)
 library(gridExtra)
@@ -18,7 +18,6 @@ library(stats)
 library(lubridate) 
 library(readr)
 library(shiny)
-
 ```
 ```{r}
 # Read in the csv file using the 'readr' package
