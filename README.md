@@ -1,3 +1,5 @@
+## FinSim Game Data Exploration and Visualizations
+
 The R notebook: FinSim_data_visualization_examples in this repo explores a cleaned dataset derived from the FinSim Game, a digital simulation game designed to teach financial literacy to microcredit borrowers in low-income countries. The data was collected during a randomized controlled trial (RCT) conducted between June 6, 2023, and July 29, 2023, in four districts of central and eastern Uganda.
 
 Data Source:
