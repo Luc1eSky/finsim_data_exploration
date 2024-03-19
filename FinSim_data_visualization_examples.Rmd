@@ -132,6 +132,11 @@ server <- function(input, output, session) {
 shinyApp(ui = ui, server = server)
 ```
 
+This code creates a Shiny web application that allows users to filter and select different characteristics of users from a dataset (df) and then plots the distribution of those characteristics.
+
+The UI part includes various select input widgets for filtering by education, age group, gender, and branch, as well as another select input widget for choosing which characteristic to plot. There's also an "Update" button.
+
+The server logic part defines reactive values to store the selected characteristic and updates it when the "Update" button is clicked. It then filters the dataset based on the selected filters and characteristic, computes the counts for each category of the selected characteristic, and plots a bar chart using ggplot2.
 
 ```{r}
 # Create bar chart that indicates the attention rate of participants across the total of 5 game sessions of the RCT
