@@ -14,7 +14,10 @@ The FinSim Game was developed by Development Economics students at the Universit
 
 Project Repository:
 The complete project, including the R notebook and potentially other relevant files, can be found on GitHub: https://github.com/Luc1eSky/financial_literacy_game
+The game can also be checked out here: https://financelitsim.web.app/#/
+
 
 Note:
-
 This readme assumes the R notebook and the data file (read_me_game_data.Rmd and data source: UG_cleaned_game_data.csv) are stored in the same repository. You might need to adjust the file paths if the data is located elsewhere.
+
+
