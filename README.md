@@ -19,6 +19,6 @@ The game (web application) itself can be checked out here: https://financelitsim
 
 
 Note:
-This readme assumes the R notebook and the data file (read_me_game_data.Rmd and data source: UG_cleaned_game_data.csv) are stored in the same repository. You might need to adjust the file paths if the data is located elsewhere.
+This readme assumes the R notebook and the data files (read_me_game_data.Rmd and data source: UG_cleaned_game_data.csv) are stored in the same folder. You might need to adjust the file paths if the data is located elsewhere.
 
 
